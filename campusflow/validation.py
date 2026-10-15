@@ -18,8 +18,9 @@ def validate_title(title):
     return title.strip()
 
 
+
 def normalize_category(category):
-    """Accept standard categories or a non-empty custom category."""
+    """Accept only the four permitted ticket categories."""
 
     if not isinstance(category, str):
         raise ValueError("Category must be text.")
@@ -29,13 +30,12 @@ def normalize_category(category):
     if not cleaned:
         raise ValueError("Category cannot be empty.")
 
-    # Standard categories keep their official capitalization.
     for valid_category in VALID_CATEGORIES:
         if cleaned.casefold() == valid_category.casefold():
             return valid_category
 
-    # Accept custom categories such as Electricity or Maintenance.
-    return cleaned
+    raise ValueError("Invalid category.")
+
 
 def normalize_urgency(urgency):
     """Validate urgency and return it in lowercase."""

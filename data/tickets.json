@@ -1,0 +1,13 @@
+[
+    {
+        "id": "T001",
+        "title": "jj",
+        "category": "Network",
+        "urgency": "high",
+        "affected_users": 76,
+        "priority": "critical",
+        "status": "open",
+        "assigned_to": null,
+        "notes": []
+    }
+]
