@@ -1,61 +1,94 @@
+"""Validation helpers for CampusFlow Next."""
 
-"""Validation helpers for CampusFlow tickets."""
+# Only these categories are allowed.
+VALID_CATEGORIES = {"Network", "Hardware", "Software", "Other"}
 
-CATEGORIES = ("Network", "Hardware", "Software", "Other")
-STATUSES = ("open", "in_progress", "resolved")
-PRIORITIES = ("critical", "high", "medium", "low")
+# Only these urgency levels are allowed.
+VALID_URGENCIES = {"low", "medium", "high"}
 
-
-def validate_text(value, field_name="Value"):
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field_name} must be a non-empty string.")
-    return value.strip()
+VALID_STATUSES = {"open", "in_progress", "resolved"}
+VALID_PRIORITIES = {"critical", "high", "medium", "low"}
 
 
-def validate_category(category):
-    category = validate_text(category, "Category")
-    for valid_category in CATEGORIES:
-        if category.lower() == valid_category.lower():
+def validate_title(title):
+    """Check that a ticket title is not empty."""
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("Ticket title cannot be empty.")
+
+    return title.strip()
+
+
+def normalize_category(category):
+    """Accept standard categories or a non-empty custom category."""
+
+    if not isinstance(category, str):
+        raise ValueError("Category must be text.")
+
+    cleaned = category.strip()
+
+    if not cleaned:
+        raise ValueError("Category cannot be empty.")
+
+    # Standard categories keep their official capitalization.
+    for valid_category in VALID_CATEGORIES:
+        if cleaned.casefold() == valid_category.casefold():
             return valid_category
-    raise ValueError("Invalid category.")
+
+    # Accept custom categories such as Electricity or Maintenance.
+    return cleaned
+
+def normalize_urgency(urgency):
+    """Validate urgency and return it in lowercase."""
+    if not isinstance(urgency, str):
+        raise ValueError("Urgency must be text.")
+
+    cleaned = urgency.strip().lower()
+
+    if cleaned not in VALID_URGENCIES:
+        raise ValueError("Urgency must be low, medium, or high.")
+
+    return cleaned
 
 
-def validate_status(status):
-    status = validate_text(status, "Status").lower()
-    if status not in STATUSES:
-        raise ValueError("Invalid status.")
-    return status
+def validate_affected_users(affected_users):
+    """Require a positive integer, rejecting booleans too."""
+    if isinstance(affected_users, bool) or not isinstance(
+        affected_users, int
+    ):
+        raise ValueError("Affected users must be a whole number.")
 
+    if affected_users <= 0:
+        raise ValueError("Affected users must be greater than zero.")
 
-def validate_priority(priority):
-    priority = validate_text(priority, "Priority").lower()
-    if priority not in PRIORITIES:
-        raise ValueError("Invalid priority.")
-    return priority
+    return affected_users
 
 
 def validate_staff_name(staff_name):
-    return validate_text(staff_name, "Staff name")
+    """Require a nonempty staff name."""
+    if not isinstance(staff_name, str) or not staff_name.strip():
+        raise ValueError("Staff name cannot be empty.")
+
+    return staff_name.strip()
 
 
-def validate_note(author, message):
-    return {
-        "author": validate_text(author, "Author"),
-        "message": validate_text(message, "Note message"),
-    }
+def validate_note_author(author):
+    """Require a nonempty note author."""
+    if not isinstance(author, str) or not author.strip():
+        raise ValueError("Note author cannot be empty.")
+
+    return author.strip()
 
 
-def validate_ticket_data(ticket):
-    if not isinstance(ticket, dict):
-        raise ValueError("Ticket must be a dictionary.")
+def validate_note_message(message):
+    """Require a note containing 5–300 characters after trimming."""
+    if not isinstance(message, str):
+        raise ValueError("Note message must be text.")
 
-    validate_text(ticket.get("title"), "Title")
-    validate_category(ticket.get("category"))
-    validate_status(ticket.get("status"))
-    validate_priority(ticket.get("priority"))
+    cleaned = message.strip()
 
-    ticket_id = ticket.get("id")
-    if isinstance(ticket_id, bool) or not isinstance(ticket_id, int) or ticket_id < 1:
-        raise ValueError("Ticket ID must be a positive integer.")
+    if not 5 <= len(cleaned) <= 300:
+        raise ValueError(
+            "Note message must contain 5 to 300 characters."
+        )
 
-    return True
+    return cleaned
