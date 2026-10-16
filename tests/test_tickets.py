@@ -38,16 +38,19 @@ class TestTicketValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_ticket("   ", "Network", "high", 5)
             
-    def test_reject_custom_category(self):
-        """Reject categories outside the four permitted options."""
-        with self.assertRaises(ValueError):
-            validate_ticket(
-                "Internet is down",
-                "Food",
-                "high",
-                5,
-            )
+    def test_accept_custom_category(self):
+        """Accept a custom category entered by the user."""
+        title, category, urgency = validate_ticket(
+            "Internet is down",
+            "Food",
+            "high",
+            5,
+        )
 
+        self.assertEqual(title, "Internet is down")
+        self.assertEqual(category, "Food")
+        self.assertEqual(urgency, "high")
+    
     def test_reject_empty_category(self):
         """Reject a category containing only whitespace."""
         with self.assertRaises(ValueError):
